@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum role {
+  admin
+  teacher
+  student
+}
+
+model User {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  login     String       @unique
+  password  String
+  role      role
+  picture   String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  Student   Student[]
+  token     TokenModel[]
+  Teacher   Teacher[]
+
+  @@map("user")
+}
+
+enum Status {
+  active
+  inActive
+}
+
+enum section {
+  A
+  B
+}
+
+enum gender {
+  male
+  female
+}
+
+model Student {
+  id              String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName       String
+  lastName        String
+  email           String
+  phone           String
+  picture         String
+  dateofBirth     DateTime
+  gender          gender
+  rollNumber      Int
+  admissionNumber String
+  admissionDate   DateTime
+  class           String
+  section         section
+  userId          String   @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([id])
+  @@map("student")
+}
+
+model Teacher {
+  id        String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String  @db.Uuid
+  teacherID String
+  firstName String
+  lastName  String
+  email     String
+  class     String
+  subject   String
+  gender    gender
+  phone     String
+  birthday  String
+  section   section
+  notes     String  @db.Text
+  picture   String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([id])
+  @@map("teacher")
+}
+
+model TokenModel {
+  id           String @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String @db.Uuid
+  refreshToken String
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([id])
+  @@map("tokenModel")
+}
